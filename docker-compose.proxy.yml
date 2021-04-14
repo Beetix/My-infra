@@ -12,7 +12,7 @@ services:
       - "443:443"   # Default HTTPS
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock # So that Traefik can listen to the Docker events
-      - ./data:/certs
+      - /docker/traefik/certs:/certs
     labels:
       - "traefik.http.routers.dashboard.rule=Host(`proxy.${DOMAIN}`)"
       - "traefik.http.routers.dashboard.entrypoints=https"
@@ -40,8 +40,8 @@ services:
      depends_on:
       - traefik
      volumes:
-      - ./data:/app/data
-      - ./certs:/app/certs
+      - /docker/traefik/certs:/app/data
+      - /docker/certs:/app/certs
 
 networks:
   proxy:
