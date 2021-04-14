@@ -1,0 +1,48 @@
+version: '3.9'
+
+services:
+  traefik:
+    image: traefik:2.4
+    container_name: traefik
+    restart: unless-stopped
+    networks:
+      - proxy
+    ports:
+      - "80:80"     # Default HTTP
+      - "443:443"   # Default HTTPS
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock # So that Traefik can listen to the Docker events
+      - ./data:/certs
+    labels:
+      - "traefik.http.routers.dashboard.rule=Host(`proxy.${DOMAIN}`)"
+      - "traefik.http.routers.dashboard.entrypoints=https"
+      - "traefik.http.routers.dashboard.tls.certresolver=main"
+      - "traefik.http.routers.dashboard.service=api@internal"
+      - "traefik.http.routers.dashboard.middlewares=auth"
+      - "traefik.http.middlewares.auth.basicauth.users=${API_USERS}"
+      - "traefik.enable=true"
+      - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.https-redirect.redirectscheme.permanent=true"
+    command:
+      - "--providers.docker"
+      - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.network=proxy"
+      - "--entrypoints.http.address=:80"
+      - "--entrypoints.https.address=:443"
+      - "--certificatesresolvers.main.acme.email=${EMAIL}"
+      - "--certificatesresolvers.main.acme.storage=/certs/acme.json"
+      - "--certificatesresolvers.main.acme.httpChallenge.entrypoint=http"
+      - "--api.dashboard"
+  certs-extractor:
+     image: danielhuisman/traefik-certificate-extractor
+     container_name: certs-extractor
+     restart: unless-stopped
+     depends_on:
+      - traefik
+     volumes:
+      - ./data:/app/data
+      - ./certs:/app/certs
+
+networks:
+  proxy:
+   name: proxy
