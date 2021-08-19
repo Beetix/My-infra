@@ -33,15 +33,6 @@ services:
       - "--certificatesresolvers.main.acme.storage=/certs/acme.json"
       - "--certificatesresolvers.main.acme.httpChallenge.entrypoint=http"
       - "--api.dashboard"
-  certs-extractor:
-     image: danielhuisman/traefik-certificate-extractor
-     container_name: certs-extractor
-     restart: unless-stopped
-     depends_on:
-      - traefik
-     volumes:
-      - /docker/traefik/certs:/app/data
-      - /docker/certs:/app/certs
 
 networks:
   proxy:
