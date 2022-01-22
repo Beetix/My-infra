@@ -5,6 +5,7 @@ services:
     image: mariadb:10
     container_name: nextcloud_db
     restart: unless-stopped
+    command: --transaction-isolation=READ-COMMITTED --binlog-format=ROW --skip-innodb-read-only-compressed
     volumes:
       - /docker/cloud/db:/var/lib/mysql
       - db-socket:/var/run/mysqld
