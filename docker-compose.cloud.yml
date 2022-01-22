@@ -1,0 +1,50 @@
+version: '3.9'
+
+services:
+  db:
+    image: mariadb:10
+    container_name: nextcloud_db
+    restart: unless-stopped
+    volumes:
+      - /docker/cloud/db:/var/lib/mysql
+      - db-socket:/var/run/mysqld
+    environment:
+      - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
+      - MYSQL_PASSWORD=${DB_USER_PASSWORD}
+      - MYSQL_DATABASE=${DB_DATABASE}
+      - MYSQL_USER=${DB_USER}
+    networks:
+      - db
+
+  nextcloud:
+    image: nextcloud:22-apache
+    container_name: nextcloud
+    depends_on:
+      - db
+    networks:
+      - proxy
+      - db
+    volumes:
+      - /docker/cloud/nextcloud:/var/www/html
+      - /storage/docker/nextcloud:/var/www/html/data
+      - db-socket:/var/run/mysqld
+    restart: unless-stopped
+    labels:
+      - "traefik.http.routers.nextcloud-https.rule=Host(`cloud.${DOMAIN}`)"
+      - "traefik.http.routers.nextcloud-https.entryPoints=https"
+      - "traefik.http.routers.nextcloud-https.tls.certresolver=main"
+      - "traefik.http.routers.nextcloud-https.tls.domains[0].main=${DOMAIN}"
+      - "traefik.http.routers.nextcloud-https.tls.domains[0].sans=*.${DOMAIN}"
+      - "traefik.http.routers.nextcloud-http.rule=Host(`cloud.${DOMAIN}`)"
+      - "traefik.http.routers.nextcloud-http.entryPoints=http"
+      - "traefik.http.routers.nextcloud-http.middlewares=https-redirect"
+      - "traefik.enable=true"
+
+volumes:
+  db-socket:
+
+networks:
+  db:
+    name: nextcloud_db
+  proxy:
+    external: true
