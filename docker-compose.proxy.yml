@@ -2,7 +2,7 @@ version: '3.9'
 
 services:
   traefik:
-    image: traefik:2.4
+    image: traefik:2.8
     container_name: traefik
     restart: unless-stopped
     networks:
