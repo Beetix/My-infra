@@ -13,6 +13,7 @@ services:
       - "443:443"   # Default HTTPS
     volumes:
       - /docker/traefik/certs:/certs
+      - /docker/traefik/files:/files
     environment:
       - OVH_ENDPOINT=${OVH_ENDPOINT}
       - OVH_APPLICATION_KEY=${OVH_APPLICATION_KEY}
@@ -33,6 +34,8 @@ services:
       - "--providers.docker.endpoint=tcp://docker_socket_proxy:2375"
       - "--providers.docker.exposedbydefault=false"
       - "--providers.docker.network=proxy"
+      - "--providers.file.directory=/files"
+      - "--providers.file.watch=true"
       - "--entrypoints.http.address=:80"
       - "--entrypoints.https.address=:443"
       - "--entrypoints.http.http.redirections.entrypoint.to=https"
