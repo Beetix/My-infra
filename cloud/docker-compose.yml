@@ -34,9 +34,6 @@ services:
       - "traefik.http.routers.nextcloud-https.rule=Host(`cloud.${DOMAIN}`)"
       - "traefik.http.routers.nextcloud-https.entryPoints=https"
       - "traefik.http.routers.nextcloud-https.tls.certresolver=main"
-      - "traefik.http.routers.nextcloud-https.tls.domains[0].main=${DOMAIN}"
-      - "traefik.http.routers.nextcloud-https.tls.domains[0].sans=*.${DOMAIN}"
-      - "traefik.http.routers.nextcloud-http.rule=Host(`cloud.${DOMAIN}`)"
       - "traefik.enable=true"
 
 volumes:
