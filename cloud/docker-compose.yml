@@ -25,6 +25,7 @@ services:
     networks:
       - proxy
       - db
+      - mail
     volumes:
       - /docker/cloud/nextcloud:/var/www/html
       - /storage/docker/nextcloud:/var/www/html/data
@@ -43,4 +44,6 @@ networks:
   db:
     name: nextcloud_db
   proxy:
+    external: true
+  mail:
     external: true

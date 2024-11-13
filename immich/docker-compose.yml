@@ -25,6 +25,7 @@ services:
     networks:
       - default
       - proxy
+      - mail
     depends_on:
       - redis
       - database
@@ -105,4 +106,6 @@ volumes:
 networks:
   default:
   proxy:
+    external: true
+  mail:
     external: true

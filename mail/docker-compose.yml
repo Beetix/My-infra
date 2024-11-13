@@ -1,0 +1,17 @@
+services:
+  postfix:
+    image: boky/postfix
+    container_name: postfix
+    restart: unless-stopped
+    volumes:
+      - /docker/mail/opendkim/keys:/etc/opendkim/keys
+    environment:
+      ALLOWED_SENDER_DOMAINS: ${DOMAIN} 
+      POSTFIX_myhostname: ${HOSTNAME} 
+      DKIM_AUTOGENERATE: 1
+    networks:
+      - mail
+
+networks:
+  mail:
+    name: mail
