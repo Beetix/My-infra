@@ -16,7 +16,7 @@ services:
       - db
 
   nextcloud:
-    image: nextcloud:27-apache
+    image: nextcloud:30-apache
     container_name: nextcloud
     depends_on:
       - db
