@@ -20,10 +20,12 @@ services:
     container_name: nextcloud
     depends_on:
       - db
+      - redis
     networks:
       - proxy
       - db
       - mail
+      - redis
     volumes:
       - /docker/cloud/nextcloud:/var/www/html
       - /storage/docker/nextcloud:/var/www/html/data
@@ -42,6 +44,7 @@ services:
       - nextcloud
     networks:
       - db
+      - redis
     volumes:
       - /docker/cloud/nextcloud:/var/www/html
       - /storage/docker/nextcloud:/var/www/html/data
@@ -49,12 +52,26 @@ services:
     restart: unless-stopped
     entrypoint: /cron.sh
 
+  redis:
+    image: redis:7-alpine
+    container_name: nextcloud_redis
+    restart: unless-stopped
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+    networks:
+      - redis
+    volumes:
+      - /docker/cloud/redis:/data
+    command: redis-server --requirepass $REDIS_PASSWORD
+
 volumes:
   db-socket:
 
 networks:
   db:
     name: nextcloud_db
+  redis:
+    name: nextcloud_redis
   proxy:
     external: true
   mail:
