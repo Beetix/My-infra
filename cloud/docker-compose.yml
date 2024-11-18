@@ -35,6 +35,20 @@ services:
       - "traefik.http.routers.nextcloud-https.tls.certresolver=main"
       - "traefik.enable=true"
 
+  cron:
+    image: nextcloud:30-apache
+    container_name: nextcloud_cron
+    depends_on:
+      - nextcloud
+    networks:
+      - db
+    volumes:
+      - /docker/cloud/nextcloud:/var/www/html
+      - /storage/docker/nextcloud:/var/www/html/data
+      - db-socket:/var/run/mysqld
+    restart: unless-stopped
+    entrypoint: /cron.sh
+
 volumes:
   db-socket:
 
