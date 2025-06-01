@@ -83,6 +83,33 @@ services:
     networks:
       - default
 
+  immich-kiosk:
+    image: ghcr.io/damongolding/immich-kiosk:latest
+    container_name: immich_kiosk
+    environment:
+      LANG: "en_GB"
+      TZ: ${TZ}
+      KIOSK_IMMICH_API_KEY: ${KIOSK_IMMICH_API_KEY}
+      KIOSK_IMMICH_URL: "immich-server:2283"
+      # External url for image links/QR codes
+      KIOSK_IMMICH_EXTERNAL_URL: "photos.${DOMAIN}"
+      # Clock
+      KIOSK_SHOW_TIME: true
+      KIOSK_TIME_FORMAT: 24
+      KIOSK_SHOW_DATE: true
+      KIOSK_DATE_FORMAT: DD/MM/YYYY
+    restart: always
+    networks:
+        - proxy
+    labels:
+      - "traefik.http.routers.immich-kiosk-https.rule=Host(`kiosk.${DOMAIN}`)"
+      - "traefik.http.routers.immich-kiosk-https.entryPoints=https"
+      - "traefik.http.routers.immich-kiosk-https.tls.certresolver=main"
+      - "traefik.http.routers.immich-kiosk-https.middlewares=immich-kiosk-ipallowlist@docker"
+      - "traefik.http.services.immich-kiosk.loadbalancer.server.port=3000"
+      - "traefik.http.middlewares.immich-kiosk-ipallowlist.ipallowlist.sourcerange=${KIOSK_IPALLOWLIST_SOURCERANGE}"
+      - "traefik.enable=true"
+
 volumes:
   model-cache:
 networks:
