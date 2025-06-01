@@ -72,5 +72,6 @@ services:
 networks:
   proxy:
     name: proxy
+    enable_ipv6: true
   docker_socket:
     name: docker_socket
