@@ -16,7 +16,7 @@ services:
       - db
 
   nextcloud:
-    image: nextcloud:31-apache
+    image: nextcloud:32-apache
     container_name: nextcloud
     depends_on:
       - db
@@ -38,7 +38,7 @@ services:
       - "traefik.enable=true"
 
   cron:
-    image: nextcloud:31-apache
+    image: nextcloud:32-apache
     container_name: nextcloud_cron
     depends_on:
       - nextcloud
