@@ -87,7 +87,22 @@ ships its own compose file upstream; this repo keeps a customized version plus
 
 To upgrade: fetch the new upstream compose to `docker-compose.new.yml`, diff it
 against `docker-compose.yml`, and re-apply the local customizations onto the new
-upstream — i.e. the Traefik labels and `proxy`/`mail` networks on `immich-server`,
-the `immich-kiosk` service, removal of the upstream published `ports`, and the
-`EXT_LIB_LOCATION` external-library mount. Pin the release in `.env`
-(`IMMICH_VERSION`). Commit message format: `Upgrade Immich to vX.Y.Z`.
+upstream — the Traefik labels and `proxy`/`mail` networks on `immich-server`, the
+`immich-kiosk` service, removal of the upstream published `ports`, the
+`EXT_LIB_LOCATION` external-library mount, and the per-service `networks:` blocks.
+In practice the only genuine upstream change most releases is the pinned Valkey
+and Postgres image digests — take those, keep everything else.
+
+⚠️ **Keep `${UPLOAD_LOCATION}:/usr/src/app/upload`.** Upstream mounts it at
+`/data` (changed in v1.137.0); this library was created on the legacy path and
+Immich keeps backward-compat for it. Switching to `/data` orphans every asset
+(broken thumbnails) until an `immich-admin change-media-location` DB migration —
+do **not** "correct" this line to match upstream.
+
+The app version is pinned via `IMMICH_VERSION` in the gitignored `.env` on the
+host, so it is not visible in git — bump it there as part of the upgrade. Before
+deploying, `pg_dumpall` the `immich` DB (Immich runs irreversible schema
+migrations on server start). Verify post-deploy via `/api/server/version` and an
+asset-count check against the pre-upgrade baseline. If the upstream Postgres
+image digest is unchanged, `immich_postgres` won't be recreated (no DB engine
+migration). Commit only `docker-compose.yml`; message: `Upgrade Immich to vX.Y.Z`.
