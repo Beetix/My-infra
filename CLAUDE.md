@@ -106,3 +106,40 @@ migrations on server start). Verify post-deploy via `/api/server/version` and an
 asset-count check against the pre-upgrade baseline. If the upstream Postgres
 image digest is unchanged, `immich_postgres` won't be recreated (no DB engine
 migration). Commit only `docker-compose.yml`; message: `Upgrade Immich to vX.Y.Z`.
+
+## Nextcloud upgrade workflow
+
+The second-most-frequent change (git history: "Upgrade to Nextcloud NN"). It is
+image-driven: the container entrypoint runs `occ upgrade` automatically on start
+when the image version differs from the installed one. Nextcloud is strict —
+mishandling corrupts the instance.
+
+**Sequential majors only, latest point release first.** You cannot skip a major
+(30→31→32, never 30→32), and you must be on the latest N.x point release before
+jumping to N+1. Because the `NN-apache` tag floats to the latest point release,
+each major step is two deploys:
+
+1. `pull` + `up -d` the `nextcloud` **and** `cron` services on the current
+   `NN-apache` tag → entrypoint upgrades to latest NN.x. Then run `cron.php` ×3
+   (drains background migrations — required before the next major).
+2. Edit `cloud/docker-compose.yml` to `(NN+1)-apache` on **both** services,
+   `pull` + `up -d`, `cron.php` ×3 again.
+
+Expect a ~1 min `502 Bad Gateway` window per recreate while the entrypoint runs.
+
+**Backup before deploying** (host disk runs near-full — stream off-host):
+`occ maintenance:mode --on`, `mariadb-dump --single-transaction` of the DB
+(gzip, small) and `tar` of `/var/www/html/config`, then `maintenance:mode --off`
+before recreating (the entrypoint manages its own maintenance flag). Do **not**
+back up `/var/www/html/data` — it is the bulk user-data mount, untouched by the
+upgrade.
+
+**Post-upgrade hygiene:** a major upgrade silently disables third-party apps;
+`occ app:update --all` then `occ app:enable <app>` to bring them back on a
+compatible build. Run `occ db:add-missing-primary-keys` and
+`occ db:add-missing-indices`. Verify with `occ setupchecks`, `occ status`
+(`needsDbUpgrade:false`), and `status.php` for the version. The many apps shown
+"disabled" by `occ app:list` are Nextcloud's default-off shipped apps — normal.
+
+Commit only `cloud/docker-compose.yml` (the major-tag bump; the intermediate
+point-release step needs no file change); message: `Upgrade to Nextcloud NN`.
