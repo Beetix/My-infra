@@ -36,6 +36,9 @@ services:
       - "traefik.http.routers.nextcloud-https.rule=Host(`cloud.${DOMAIN}`)"
       - "traefik.http.routers.nextcloud-https.entryPoints=https"
       - "traefik.http.routers.nextcloud-https.tls.certresolver=main"
+      - "traefik.http.routers.nextcloud-https.middlewares=nextcloud-hsts"
+      - "traefik.http.middlewares.nextcloud-hsts.headers.stsSeconds=15552000"
+      - "traefik.http.middlewares.nextcloud-hsts.headers.stsIncludeSubdomains=true"
       - "traefik.enable=true"
 
   cron:
