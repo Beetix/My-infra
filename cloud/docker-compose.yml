@@ -1,6 +1,6 @@
 services:
   db:
-    image: mariadb:10
+    image: mariadb:11.4
     container_name: nextcloud_db
     restart: unless-stopped
     command: --transaction-isolation=READ-COMMITTED --binlog-format=ROW --skip-innodb-read-only-compressed
@@ -12,6 +12,7 @@ services:
       - MYSQL_PASSWORD=${DB_USER_PASSWORD}
       - MYSQL_DATABASE=${DB_DATABASE}
       - MYSQL_USER=${DB_USER}
+      - MARIADB_AUTO_UPGRADE=1
     networks:
       - db
 
