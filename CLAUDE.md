@@ -144,9 +144,13 @@ it). And run `occ maintenance:repair --include-expensive` to apply the mimetype
 and schema migrations that majors do not auto-run. Verify with `occ setupchecks`,
 `occ status` (`needsDbUpgrade:false`), and `status.php` for the version. The many
 apps shown "disabled" by `occ app:list` are Nextcloud's default-off shipped apps
-— normal; residual `⚠` for "maintenance window start" and "HTTP headers"
-(reverse-proxy header hardening, a separate Traefik-middleware concern) are
-expected and harmless.
+— normal. The setupchecks baseline is fully clean (zero `✗`/`⚠`): the former
+"maintenance window start" and "HTTP headers" warnings are permanently fixed
+(`maintenance_window_start` system config; an HSTS `headers` middleware on the
+`nextcloud-https` router — TLS terminates at Traefik so Apache never emits
+`Strict-Transport-Security`, while NC's `.htaccess` supplies the rest). After an
+upgrade these stay green provided you ran `maintenance:update:htaccess`; a
+reappearing header/window `⚠` is a real regression, not expected.
 
 Commit only `cloud/docker-compose.yml` (the major-tag bump; the intermediate
 point-release step needs no file change); message: `Upgrade to Nextcloud NN`.
