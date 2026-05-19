@@ -137,9 +137,16 @@ upgrade.
 **Post-upgrade hygiene:** a major upgrade silently disables third-party apps;
 `occ app:update --all` then `occ app:enable <app>` to bring them back on a
 compatible build. Run `occ db:add-missing-primary-keys` and
-`occ db:add-missing-indices`. Verify with `occ setupchecks`, `occ status`
-(`needsDbUpgrade:false`), and `status.php` for the version. The many apps shown
-"disabled" by `occ app:list` are Nextcloud's default-off shipped apps — normal.
+`occ db:add-missing-indices`. Also run `occ maintenance:update:htaccess` —
+otherwise stale rewrite rules break `.well-known/webfinger|nodeinfo` and trip
+the WebDAV / `.well-known` setupchecks (caldav/carddav keep working, which masks
+it). And run `occ maintenance:repair --include-expensive` to apply the mimetype
+and schema migrations that majors do not auto-run. Verify with `occ setupchecks`,
+`occ status` (`needsDbUpgrade:false`), and `status.php` for the version. The many
+apps shown "disabled" by `occ app:list` are Nextcloud's default-off shipped apps
+— normal; residual `⚠` for "maintenance window start" and "HTTP headers"
+(reverse-proxy header hardening, a separate Traefik-middleware concern) are
+expected and harmless.
 
 Commit only `cloud/docker-compose.yml` (the major-tag bump; the intermediate
 point-release step needs no file change); message: `Upgrade to Nextcloud NN`.
